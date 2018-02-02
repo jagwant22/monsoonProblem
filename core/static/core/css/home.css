@@ -1,0 +1,24 @@
+*{
+	font-family: 'Muli';
+}
+body{
+	background-image: url('https://wallpapercave.com/wp/QA0TQ2o.jpg');
+	background-size: 100% no-repeat center;
+}
+h1{
+	text-align: center;
+	color: #eee;
+}
+
+#form_holder{
+	border:1px solid #eee;
+	height: 50vh;
+	border-radius: 4px;
+	padding: 2%;
+	color: #ddd;
+}
+
+legend{
+	text-align: right;
+	padding-right: 2%;
+}

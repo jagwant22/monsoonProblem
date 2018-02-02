@@ -1,0 +1,43 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Jagwant Sehgal</title>
+	<!-- Include Imports -->
+	{%include 'imports.html'%}
+	<link rel='stylesheet' href='{%static "core/css/home.css"%}' />
+</head>
+<body>
+	<div class="container">
+		<div class="row ">
+			<div class="col-sm-12 col-xs-12 ">
+				<h1>Data Parsing</h1>
+				<br />
+				<div class="col-sm-12">
+					
+					<div id='form_holder'>
+						<form>
+							<div class="form-group">
+								<label for="queryVar">Query Variable</label>
+								<input type="text" class="form-control" id="queryVar" placeholder="NPA">
+						  	</div>
+						  	<div class="form-group">
+						  		<label for="year">Query Year</label>
+						  		<input type="text" class="form-control" id="year" placeholder="Query Year">
+						  	</div>
+						    <div class="form-group">
+						    	<label for="inputFile">Please Upload Balance Sheet</label>
+						    	<input type="file" id="inputFile">
+						    	<p class="help-block">Please select Pdf file</p>
+						    </div>
+						    
+						  	<button type="submit" class="btn btn-primary text-center">Submit</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
