@@ -5,6 +5,7 @@ $(function(){
 
 let submitForm = function(){
 	event.preventDefault();
+	$("[type='submit']").prop('disabled', true);
 	console.log("Submit Form Clicked");
 	var formData = new FormData();
 	var fileField = document.querySelector("input[type='file']");
@@ -20,12 +21,13 @@ let submitForm = function(){
 	  body: formData,
       credentials: 'same-origin',
 	})
-	.then(()=> {
+	.then((response)=> {
 		return response.json();
 	})
 	.catch(error => console.error('Error:', error))
-	.then(function(data){
+	.then((data)=>{
 		console.log(data);
+		showRes(data["query_result"], data["csv_id"])
 	});
 
 }
@@ -34,3 +36,9 @@ let verifyForm = function(){
 	console.log("Verify Form");
 }
 
+let showRes = function(result, downlink){
+	$("#queryres").val(result);
+	$("#result_holder").find("a").attr('href', '/queryfile?path='+downlink);
+	$("#form_holder").slideUp();
+	$("#result_holder").css('display', 'block');
+}

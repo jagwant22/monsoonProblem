@@ -3,6 +3,8 @@ import json
 from django.http import JsonResponse
 from django.views import View
 import pandas as pd
+import os
+import monsoonApp.settings as settings
 from tabula import read_pdf, convert_into
 from .models import PdfUploadModel
 import re
@@ -10,62 +12,93 @@ def home(request):
 	return render(request, 'index.html', context = {})
 
 class FileUploadClass(View):
+	
 	def get(self,request):
-		pass
+		path = request.GET['path']
+		media_path = PdfUploadModel.objects.get(pk = path).return_csv
+		
+		if os.path.exists(media_path):
+			with open(media_path, 'r') as fh:
+				response = HttpResponse(fh.read())
+				response['Content-Disposition'] = 'inline; filename=' + os.path.basename(media_path)
+				return response
+		else:
+			return HttpResponse("404: Not Found")
 
 	def post(self,request):
-		data = request.POST
-		query_data = dict()
-		query_data["query"] = data["queryVar"]
-		query_data["year"] = data["forYear"]
-
-		file = request.FILES["pdf_file"]
-
-		upload_object =PdfUploadModel(
-				file_name = "pdf-data",
-				file = file
-			)
-
-		upload_object.save()
-		file_name = upload_object.file.name
-		cleaned_data = cleanData(upload_object.file.url)
-		query_result = runQueryOnData(query_data, cleaned_data)
-		final_data = mergeFrames(cleaned_data)
-		csv_location = generateCsvFromDataFrame(final_data , file_name)
-		upload_object.csv_location = csv_location
-		upload_object.save()
 		return_data = dict()
-		return_data['query_result'] = query_result
-		return_data['csv_location'] = csv_location
-		return_data['status'] = 200
+		try:
+			if request.method == 'POST':
+				data = request.POST
+				query_data = dict()
+				query_data["query"] = data["queryVar"]
+				query_data["year"] = data["forYear"]
+
+				file = request.FILES["pdf_file"]
+
+				upload_object =PdfUploadModel(
+						file_name = "pdf-data",
+						file = file, 
+						query_name = query_data["query"],
+						query_year = query_data["year"]
+					)
+
+				upload_object.save()
+				file_name = upload_object.file.name
+				cleaned_data = cleanData(upload_object.file.url)
+				query_result = runQueryOnData(query_data, cleaned_data)
+				final_data = mergeFrames(cleaned_data)
+				csv_location = generateCsvFromDataFrame(final_data , file_name)
+				upload_object.return_csv = csv_location
+				upload_object.save()
+				return_data['query'] = query_data['query']
+				return_data['query_result'] = query_result
+				return_data['csv_id'] = upload_object.pk
+				return_data['status'] = 200
+			
+		except Exception as e:
+			return_data['status'] = 500
+			return_data['result'] = 'FAILURE'
+			return_data['reason'] = str(e)
+		
 		return JsonResponse(return_data)
 
 
 def runQueryOnData(query,data_frames):
-	print("Run Query on Dataframe")
-	print(data_frames)
+	
 	return_result = []
 	for table in data_frames :
 		return_result.append(searchTable(table, query))
 
+	for each in return_result:
+		if each == "{}":
+			return_result.remove(each)
+	return return_result
 	
 
 
 def searchTable(table, query):
 	cols = table.columns
+	print(query)
 	to_return = ""
 	try:
+
 		select_row = table.loc[(table[cols[0]] == query['query'])]
 		if query['year'] != "":
 			to_return = select_row[query['year']]
 		else :
 			to_return = select_row
-		return to_return
-	except:
+
+		print(to_return)
+		return to_return.to_json()
+	except Exception as E:
+		print(E)
 		return False
 
 def generateCsvFromDataFrame(frame, name):
 	# Generate Csv file 
+	# Remove any rows where all values are NaN
+	frame.dropna(axis=1, how='all')
 	try:
 		name = name.split(".")[0]
 	except:
@@ -82,12 +115,7 @@ def renameTableCols(table):
 	cols = table.columns
 
 	for col in cols :
-		print(col)
-		print(re.match(r"Unnamed\b", col ))
-
 		if re.match(r"Unnamed\b", col ) :
-			print("Renaming Column " + str(col))
-
 			table.rename(columns = {col : ""}, inplace=True)
 		if col.split("."):
 			table.rename(columns = {col:col.split(".")[0]}, inplace=True)
@@ -127,9 +155,9 @@ def cleanData(dataFile):
 
 
 	table2.insert(0, table2_col_name, split_2)
-	print("Renaming Table 1")
+	
 	table1.rename(columns={table1.columns[2]: table1.columns[2].split(" ",1)[0]},inplace=True)
-	print("Post Rename")
+	
 	c = pd.Series()
 	for index, row in enumerate(table1.iloc[:,2]):
 		try:
@@ -140,8 +168,11 @@ def cleanData(dataFile):
 
 	table1.iloc[:,2] = c
 
+	
+	# Return List of Dataframes
 	tables = []
 	tables.append(table1)
+
 	tables.append(table2)
 	return tables
 

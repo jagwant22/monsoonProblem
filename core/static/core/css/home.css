@@ -22,3 +22,7 @@ legend{
 	text-align: right;
 	padding-right: 2%;
 }
+#result_holder{
+	display: none;
+	
+}
