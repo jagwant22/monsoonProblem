@@ -5,6 +5,7 @@ from django.views import View
 import pandas as pd
 from tabula import read_pdf, convert_into
 from .models import PdfUploadModel
+import re
 def home(request):
 	return render(request, 'index.html', context = {})
 
@@ -26,14 +27,18 @@ class FileUploadClass(View):
 			)
 
 		upload_object.save()
+		file_name = upload_object.file.name
 		cleaned_data = cleanData(upload_object.file.url)
-		runQueryOnData(query_data, cleaned_data)
+		query_result = runQueryOnData(query_data, cleaned_data)
 		final_data = mergeFrames(cleaned_data)
-		csv_location = generateCsvFromDataFrame(final_data)
-		# upload_object.csv_location = csv_location
-		# upload_object.save()
-
-		return JsonResponse({"status":200})
+		csv_location = generateCsvFromDataFrame(final_data , file_name)
+		upload_object.csv_location = csv_location
+		upload_object.save()
+		return_data = dict()
+		return_data['query_result'] = query_result
+		return_data['csv_location'] = csv_location
+		return_data['status'] = 200
+		return JsonResponse(return_data)
 
 
 def runQueryOnData(query,data_frames):
@@ -48,7 +53,6 @@ def runQueryOnData(query,data_frames):
 
 def searchTable(table, query):
 	cols = table.columns
-	df.loc[(df['column_name'] == some_value) & df['other_column'].isin(some_values)]
 	to_return = ""
 	try:
 		select_row = table.loc[(table[cols[0]] == query['query'])]
@@ -60,15 +64,35 @@ def searchTable(table, query):
 	except:
 		return False
 
-def generateCsvFromDataFrame(frame):
-	# generate and save csv.
-	# return csv location
-	pass
+def generateCsvFromDataFrame(frame, name):
+	# Generate Csv file 
+	try:
+		name = name.split(".")[0]
+	except:
+		pass
+	location = name+'.csv'
+	frame.to_csv(location)
+	return location
 
 def mergeFrames(frames):
-	for frame in frames: 
-		# Merge these motherfuckers and return the single frame
-		pass
+	return pd.concat([frames[0], frames[1]], axis=1)
+
+def renameTableCols(table):
+	# Handling unnamed and . in column names
+	cols = table.columns
+
+	for col in cols :
+		print(col)
+		print(re.match(r"Unnamed\b", col ))
+
+		if re.match(r"Unnamed\b", col ) :
+			print("Renaming Column " + str(col))
+
+			table.rename(columns = {col : ""}, inplace=True)
+		if col.split("."):
+			table.rename(columns = {col:col.split(".")[0]}, inplace=True)
+
+	return table
 
 def cleanData(dataFile):
 	# Split the dataframe to handle merged column
@@ -80,7 +104,9 @@ def cleanData(dataFile):
 	# Split dataframe into two separate dataframes
 	table1 = original_dataframe.iloc[:,:3]
 	table2 = original_dataframe.iloc[:,3:]
-	
+	table1 = renameTableCols(table1)
+	table2 = renameTableCols(table2)
+
 	# clean column 3
 	column3 = table1.iloc[:,2]
 	column3_name = table1.columns[2]
@@ -92,13 +118,12 @@ def cleanData(dataFile):
 	for row in column3:
 		try:
 			split_1.append(row.split(" ",1)[0])
-			split_1_header
 		except:
 			split_1.append("")
 		try:
 			split_2.append(row.split(" ",1)[1])
 		except:
-			split_2.append("NaN")
+			split_2.append("")
 
 
 	table2.insert(0, table2_col_name, split_2)
