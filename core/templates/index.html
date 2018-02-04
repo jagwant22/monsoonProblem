@@ -7,6 +7,7 @@
 	<!-- Include Imports -->
 	{%include 'imports.html'%}
 	<link rel='stylesheet' href='{%static "core/css/home.css"%}' />
+	<script src="{%static 'core/js/main.js'%}"></script>
 </head>
 <body>
 	<div class="container">
@@ -17,7 +18,10 @@
 				<div class="col-sm-12">
 					
 					<div id='form_holder'>
-						<form>
+						<form method="post" action="/queryfile">
+							
+
+
 							<div class="form-group">
 								<label for="queryVar">Query Variable</label>
 								<input type="text" class="form-control" id="queryVar" placeholder="NPA">
@@ -32,12 +36,13 @@
 						    	<p class="help-block">Please select Pdf file</p>
 						    </div>
 						    
-						  	<button type="submit" class="btn btn-primary text-center">Submit</button>
+						  	<button type="submit" onclick="event.preventDefault(); submitForm();"class="btn btn-primary text-center">Submit</button>
 						</form>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+	{%csrf_token%}
 </body>
 </html>

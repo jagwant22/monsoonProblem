@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse
 import json
+from django.http import JsonResponse
 from django.views import View
 from tabula import read_pdf, convert_into
 
@@ -11,7 +12,15 @@ class FileUploadClass(View):
 		pass
 
 	def post(self,request):
-		pass
+		data = request.POST
+		query_data = dict()
+		query_data["query"] = data["queryVar"]
+		query_data["year"] = data["forYear"]
+
+		files = request.FILES
+		
+		return JsonResponse({"data":"", "result":200})
+
 
 
 def cleanData(dataFile):
