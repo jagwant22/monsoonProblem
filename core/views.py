@@ -70,9 +70,6 @@ def runQueryOnData(query,data_frames):
 	for table in data_frames :
 		return_result.append(searchTable(table, query))
 
-	for each in return_result:
-		if each == "{}":
-			return_result.remove(each)
 	return return_result
 	
 
@@ -84,7 +81,9 @@ def searchTable(table, query):
 	try:
 
 		select_row = table.loc[(table[cols[0]] == query['query'])]
+
 		if query['year'] != "":
+			print(query["year"])
 			to_return = select_row[query['year']]
 		else :
 			to_return = select_row

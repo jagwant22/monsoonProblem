@@ -1,6 +1,12 @@
 $(function(){
 	console.log("Ready");
-
+	$("#again").click(function(){
+		$("#result_holder").slideUp();
+		$("#result_holder").find("a").attr("href", "#");
+		$("#queryres").text("");
+		$("#form_holder").css('display', 'block');
+		$("[type='submit']").prop('disabled', false);
+	});
 });
 
 let submitForm = function(){
@@ -42,3 +48,4 @@ let showRes = function(result, downlink){
 	$("#form_holder").slideUp();
 	$("#result_holder").css('display', 'block');
 }
+
