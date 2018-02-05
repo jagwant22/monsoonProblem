@@ -77,16 +77,13 @@ def runQueryOnData(query,data_frames):
 
 
 def searchTable(table, query):
-	print(table)
-	print(" : ")
 
 	cols = table.columns
 	year = str(query['year'])
-	print(year)
 	
 	to_return = dict()
 	try:
-		print(table.loc[(table[cols[0]] == query['query'])])
+		
 		select_row = table.loc[(table[cols[0]] == query['query'])]
 		
 		if year != '':	
@@ -97,7 +94,6 @@ def searchTable(table, query):
 		return to_return.to_json(orient='records')
 
 	except Exception as E:
-		print(E)
 		return False
 
 def generateCsvFromDataFrame(frame, name):
