@@ -68,28 +68,34 @@ def runQueryOnData(query,data_frames):
 	
 	return_result = []
 	for table in data_frames :
-		return_result.append(searchTable(table, query))
+		ans = searchTable(table, query)
+		if ans is not False:
+			return_result.append(searchTable(table, query))
 
 	return return_result
 	
 
 
 def searchTable(table, query):
+	print(table)
+	print(" : ")
+
 	cols = table.columns
-	print(query)
-	to_return = ""
+	year = str(query['year'])
+	print(year)
+	
+	to_return = dict()
 	try:
-
+		print(table.loc[(table[cols[0]] == query['query'])])
 		select_row = table.loc[(table[cols[0]] == query['query'])]
-
-		if query['year'] != "":
-			print(query["year"])
-			to_return = select_row[query['year']]
+		
+		if year != '':	
+			to_return = select_row[str(year)]
 		else :
 			to_return = select_row
 
-		print(to_return)
-		return to_return.to_json()
+		return to_return.to_json(orient='records')
+
 	except Exception as E:
 		print(E)
 		return False

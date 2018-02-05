@@ -43,7 +43,7 @@ let verifyForm = function(){
 }
 
 let showRes = function(result, downlink){
-	$("#queryres").val(result);
+	$("#queryres").text(result);
 	$("#result_holder").find("a").attr('href', '/queryfile?path='+downlink);
 	$("#form_holder").slideUp();
 	$("#result_holder").css('display', 'block');

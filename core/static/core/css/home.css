@@ -24,5 +24,7 @@ legend{
 }
 #result_holder{
 	display: none;
-	
+}
+#queryres{
+	color: #eee;
 }
